@@ -13,7 +13,6 @@ if (isset($_POST['update_profile'])) {
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
 
-    // cek email unik (kecuali milik sendiri)
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
     $stmt->bind_param("si", $email, $uid);
     $stmt->execute();
@@ -25,7 +24,7 @@ if (isset($_POST['update_profile'])) {
         $stmt2 = $conn->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
         $stmt2->bind_param("ssi", $name, $email, $uid);
         $stmt2->execute();
-        $success = "Profil diperbarui.";
+        $success = "Profil berhasil diperbarui.";
         $_SESSION['user_name'] = $name;
     }
 }
@@ -36,7 +35,6 @@ if (isset($_POST['change_password'])) {
     $new1 = $_POST['new_password'];
     $new2 = $_POST['confirm_password'];
 
-    // ambil password hash dari DB
     $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
     $stmt->bind_param("i", $uid);
     $stmt->execute();
@@ -54,37 +52,91 @@ if (isset($_POST['change_password'])) {
         $success = "Password berhasil diubah.";
     }
 }
-
 ?>
 <!doctype html>
-<html>
-<head><title>Profil & Ubah Password</title></head>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Profil & Ubah Password</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+      body {
+          background-color: #f5f6fa;
+      }
+      .container {
+          max-width: 700px;
+          margin-top: 50px;
+      }
+      .card {
+          border-radius: 14px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      }
+      .form-control:focus {
+          border-color: #0d6efd;
+          box-shadow: 0 0 0 0.15rem rgba(13,110,253,0.25);
+      }
+      .btn-primary {
+          border-radius: 8px;
+      }
+  </style>
+</head>
 <body>
-  <a href="dashboard.php"><< Kembali</a>
-  <h2>Profil</h2>
 
-  <?php foreach($errors as $e): ?>
-    <p style="color:red"><?= htmlspecialchars($e) ?></p>
-  <?php endforeach; ?>
-  <?php if ($success): ?>
-    <p style="color:green"><?= htmlspecialchars($success) ?></p>
-  <?php endif; ?>
+<div class="container">
+  <a href="dashboard.php" class="btn btn-secondary mb-4">&larr; Kembali ke Dashboard</a>
 
-  <form method="post">
-    <label>Nama</label><br>
-    <input name="name" value="<?= htmlspecialchars($user['name']) ?>" required><br>
-    <label>Email (username)</label><br>
-    <input name="email" type="email" value="<?= htmlspecialchars($user['email']) ?>" required><br>
-    <button name="update_profile" type="submit">Simpan Profil</button>
-  </form>
+  <div class="card p-4">
+      <h3 class="text-center text-primary mb-4">👤 Profil Pengguna</h3>
 
-  <hr>
-  <h3>Ubah Password</h3>
-  <form method="post">
-    <input type="password" name="current_password" placeholder="Password sekarang" required><br>
-    <input type="password" name="new_password" placeholder="Password baru" required><br>
-    <input type="password" name="confirm_password" placeholder="Konfirmasi password" required><br>
-    <button name="change_password" type="submit">Ubah Password</button>
-  </form>
+      <?php if(!empty($errors)): ?>
+          <div class="alert alert-danger">
+              <ul class="mb-0">
+                  <?php foreach($errors as $e): ?>
+                      <li><?= htmlspecialchars($e) ?></li>
+                  <?php endforeach; ?>
+              </ul>
+          </div>
+      <?php endif; ?>
+
+      <?php if($success): ?>
+          <div class="alert alert-success text-center">
+              <?= htmlspecialchars($success) ?>
+          </div>
+      <?php endif; ?>
+
+      <!-- Form Update Profil -->
+      <form method="post" class="mb-4">
+          <div class="mb-3">
+              <label class="form-label fw-semibold">Nama Lengkap</label>
+              <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" class="form-control" required>
+          </div>
+          <div class="mb-3">
+              <label class="form-label fw-semibold">Email</label>
+              <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" class="form-control" required>
+          </div>
+          <button name="update_profile" type="submit" class="btn btn-primary w-100">💾 Simpan Perubahan Profil</button>
+      </form>
+
+      <hr class="my-4">
+
+      <h4 class="text-secondary mb-3">🔒 Ubah Password</h4>
+      <form method="post">
+          <div class="mb-3">
+              <label class="form-label fw-semibold">Password Sekarang</label>
+              <input type="password" name="current_password" class="form-control" placeholder="Masukkan password sekarang" required>
+          </div>
+          <div class="mb-3">
+              <label class="form-label fw-semibold">Password Baru</label>
+              <input type="password" name="new_password" class="form-control" placeholder="Masukkan password baru" required>
+          </div>
+          <div class="mb-3">
+              <label class="form-label fw-semibold">Konfirmasi Password Baru</label>
+              <input type="password" name="confirm_password" class="form-control" placeholder="Ketik ulang password baru" required>
+          </div>
+          <button name="change_password" type="submit" class="btn btn-warning w-100">🔁 Ubah Password</button>
+      </form>
+  </div>
+</div>
+
 </body>
 </html>
